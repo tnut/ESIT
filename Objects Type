@@ -1,0 +1,255 @@
+Author : Thierry Nuttens
+Version: 25.06.2025 - 1522
+
+------------------------------------------------------------------------------------------------
+This document is made in flat text format to avoiding different formating syntax between editors
+and to facilitate the tracking (Change management like GIT)
+------------------------------------------------------------------------------------------------
+
+This is the list of object type that ESIT have to communicate with.
+
+==================================================
+* THIS ARE NOT PHYSICAL OBJECTS, SIGNALS OR PUMP *
+==================================================
+
+The interface between theses OBJECTS TYPE is done in AC 800 M PLC (and not in the 800xA system)
+
+It means the relationship is defined as:
+
+	1 NAME + 1 NODE NUMBER ( PLC Nr) + 1 OBJECTYPE + 1 RULE = 1 information (1 variable ) in the PLC
+	Each information (variable) will be available on the Communication BUS.
+	It also means that each information will have a FIXED defined UID, address, index or register value in the PLC
+	Each of this variable are then available in the PLC and can be modified by the PLC Programm AND by ESIT when apply.
+
+
+OJECTS TYPE LIST
+================
+
+VALVECON
+MOTCON
+MANSTN
+PIDCON
+SEQ
+ANALOG SIGNAL
+DIGITAL SIGNAL
+TEXT (TBD)
+
+
+
+- TYPE BOOL can only be TRUE or FALSE.
+	BOOL RESULT OPERATORS: AND, OR, XOR, NOT
+	ANALOG (INT) RESULT OPERATORS: +, -
+
+- TYPE ANALOG are Float values when not specify.
+	ANALOG RESULT OPERATORS: +, -, *, /, %, MAX, MIN
+	BOOL RESULT OPERATORS: ==, >, <
+	As the result is a BOOL: !=, =>, <= can be combined with the BOOL NOT operator
+
+- Read Only rules can ONLY be used in the conditions and may be the right VALUE of an ASSIGNEMT in the command
+	==> VALUE CHANGES on them in COMMANDS are NOT ALLOW !!!
+	==> BUT they are Read/Write access by the ESIT "engine" as explain in "Order of rules execution"
+
+- Read/Write rules can be used in BOTH conditions and commands.
+
+- a COMMAND is ALWAYS an Assignment like:
+	F20AA01 open = TRUE
+	F20AP01 start  = STEP RUN (5.1.1.7 STEP RUN is a READONLY rule)
+
+- a CONDITION is ALWAYS a BOOL RESULT OPERATOR
+
+- Order of rules execution:
+
+	5.2.1.5/Next Active Step Number = Next step in the editor
+	5.2.1.1/Active Step Number = Current step in the editor
+	5.1.1.7/STEP RUN = TRUE
+
+	COMMAND 1 = STEP RUN
+	COMMAND 2 = TRUE
+        COMMAND n = TRUE
+
+	CONDITION 1
+	CONDITION 2
+	CONDITION n
+
+	When Cycle Time elapse
+	5.2.1.2/Current Step Time = 5.2.1.2/Current Step Time + 5.2.1.7/cycle time  
+
+	Repeat all until CONDITION 1 AND CONDITION 2 AND CONDITION n is TRUE
+	If NO CONDITIONS ARE SPECIFY, START the Transition execution IN THE SAME cycle.
+
+- Transition executions:
+
+	5.2.1.4/Previous Active Step Number = 5.2.1.1/Active Step Number
+	5.2.1.2/Current Step TIME = 0
+	5.1.1.7/STEP RUN  = FALSE
+
+	Execute again all the COMMANDS
+
+	go to the STEPTO or NEXT STEP specified in the editor WITHOUT waiting the cycle time elapse
+
+- Jump execution:
+	TBD
+
+- Step To execution:
+	TBD
+
+RULES LIST FOR EACH OBJECT
+==========================
+
+1/ VALVECON
+	1.1 BOOL
+		1.1.1 Read Only
+			1.1.1.1/ is opened
+			1.1.1.2/ is closed
+			1.1.1.3/ is OK
+			1.1.1.4/ is in Alarm
+			1.1.1.5/ is in Man
+			1.1.1.6/ is Interlock
+
+		1.1.2/ Read/Write.
+			1.1.2.1/ open
+			1.1.2.2/ close
+	1.2 ANALOG
+		1.2.1 Read Only
+			1.2.1/ Position of the Valve
+
+		1.2.2 Read/Write
+
+2/ MOTCON
+	2.1 BOOL
+		2.1.1 Read Only
+			1.1.1.1/ is running
+			1.1.1.2/ is OK
+			1.1.1.3/ is in ALARM
+			1.1.1.4/ is in MAN
+			1.1.1.5/ is Interlock
+
+		2.1.2 Read/Write
+			2.1.2.1/ start
+			2.1.2.2/ stop
+	2.2 ANALOG
+		2.2.1 Read Only
+			2.2.1.1/ Measure Value 
+
+		2.2.2 Read Write
+			2.2.2.1/ Working Set Point
+3/ MANSTN
+	3.1 BOOL
+		3.1.1 Read Only
+			3.1.1.1/ is OK
+			3.1.1.2/ is in MAN
+			3.1.1.3/ is in ALARM
+		3.1.2 Read/Write
+			3.1.2.1/ set in MAN
+			3.1.2.2/ set in AUTO
+	3.2 ANALOG
+		3.2.1 Read Only
+			3.2.1.1/ Measure Value
+		3.2.2 Read Write
+			3.2.2.1/ Working Set Point
+
+4/ PIDCON
+	4.1 BOOL
+		4.1.1 Read Only
+			4.1.1.1/ is OK
+			4.1.1.2/ is in MAN
+			4.1.1.3/ is in ALARM
+			4.1.1.4/ Measure Value is > H1
+			4.1.1.5/ Measure Value is > H2
+			4.1.1.6/ Measure Value is < L1
+			4.1.1.7/ Measure Value is < L2
+			4.1.1.8/ Output Value > H
+			4.1.1.9/ Output Value < L
+
+		4.1.2 Read/Write
+			4.1.2.1/  Set in MAN
+			4.1.2.2/  Set in AUTO
+	4.2 ANALOG
+		4.2.1 Read Only
+			4.2.1.1/ Measure Value
+			4.2.1.2/ Output Value
+			4.2.1.3/ P Value
+			4.2.1.4/ I Value
+			4.2.1.5/ D Value
+
+		4.2.2 Read/Write
+			4.2.2.1/ Working Set Point
+			4.2.2.2/ H2 Measure Value
+			4.2.2.3/ H1 Measure Value
+			4.2.2.4/ L1 Measure Value
+			4.2.2.5/ L2 Measure Value
+			4.2.2.6/ L Output Value
+			4.2.2.7/ H Output Value
+
+
+5/ SEQ
+	5.1 BOOL
+		5.1.1 Read Only
+			5.1.1.1/ is OK
+			5.1.1.2/ is in MAN
+			5.1.1.3/ is in ALARM
+			5.1.1.4/ is in HOLD
+
+		5.1.2 Read/Write
+			5.1.2.1/  Start Order
+			5.1.2.2/  Stop Order
+			5.1.2.3/  Reset Order
+			5.1.2.4/  Hold Order
+			5.1.2.5/  Jump Order
+			5.1.2.6/  SEQ RUN
+			5.1.2.7/  STEP RUN
+			
+	5.2 ANALOG
+		5.2.1 Read Only
+			5.2.1.1/ Active Step Number (INT)
+			5.2.1.2/ Current Step Time in sec (INT)
+			5.2.1.3/ Running Time in sec (INT)
+			5.2.1.4/ Previous Active Step Number (INT)
+			5.2.1.5/ Next Active Step Number (INT)
+			5.2.1.6/ Step Number for Jump Order (INT)
+			5.2.1.7/ Cycle Time in mSec (INT)
+
+		5.2.2 Read/Write
+
+
+6/ ANALOG SIGNAL
+	6.1 BOOL
+		6.1.1 Read Only
+			6.1.1.1/ is OK
+			6.1.1.2/ is in Alarm
+			6.1.1.3/ VALUE is > H1
+			6.1.1.4/ VALUE is > H2
+			6.1.1.5/ VALUE is < L1
+			6.1.1.6/ VALUE is < L2
+
+		6.1.2 Read/Write
+
+	6.2 ANALOG
+		6.2.1 Read Only
+			6.2.1.1/ RANGEMAX
+			6.2.1.2/ RANGEMIN
+
+		6.2.2 Read/Write
+			6.2.2.1/ Value
+			6.2.2.2/ H2 Value
+			6.2.2.3/ H1 Value
+			6.2.2.4/ L1 Value
+			6.2.2.5/ L2 Value
+
+7/ DIGITAL SIGNAL
+	7.1 BOOL
+		7.1.1 Read Only
+			7.1.1.1/ is OK
+			7.1.1.2/ is in Alarm
+
+		7.1.2 Read/Write
+			7.1.2.1/ Value
+	7.2 ANALOG
+
+8/ TEXT
+	TBD
+
+LIST OF OBJECTS
+===============
+
+	TBD
