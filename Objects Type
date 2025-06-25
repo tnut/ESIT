@@ -71,11 +71,13 @@ TEXT (TBD)
 	CONDITION 2
 	CONDITION n
 
-	When Cycle Time elapse
+	When the Cycle Time is elapsed:
 	5.2.1.2/Current Step Time = 5.2.1.2/Current Step Time + 5.2.1.7/cycle time  
 
-	Repeat all until CONDITION 1 AND CONDITION 2 AND CONDITION n is TRUE
-	If NO CONDITIONS ARE SPECIFY, START the Transition execution IN THE SAME cycle.
+	If NO CONDITIONS ARE SPECIFY OR
+	all CONDITIONS are TRUE then
+	START the Transition execution else repeat the cycle.
+	
 
 - Transition executions:
 
