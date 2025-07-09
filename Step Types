@@ -1,0 +1,106 @@
+Author : Thierry Nuttens
+Version: 08.07.2025 - 0735
+
+This is the list of possible step that ESIT have to interpret.
+
+General Conventions:
+====================
+
+At least 1 condition is mandatory.
+Command(s) are optionnal.
+
+When the logical result of a step is FALSE,
+the sequence check if 5.2.1.2/ Current Step Time is EQUAL
+to the 5.2.1.7/ Cycle Time. If TRUE, repeat the step execution else
+the transition execution start.
+
+If the sequence is in MAN and the transition conditions are fullfill,
+the transition execution NEVER start.
+
+If the 5.2.1.2/Current step time IS BIGGER then the StepTime, the sequence
+goes into ALARM state and 5.1.1.3/ is in ALARM is TRUE.
+
+COMMANDS and CONDITION do not need to be related to each other.
+  Ex:  CONDITION: F20AA02 CLOSE and COMMAND: F20AA01 Open
+
+IN CONDITIONS, if nothing is specified after the OBJECT Type RULE
+we assume it is an AND LOGIC betwen the current line CONDITION and the
+next line CONDITION.
+
+
+1. Step Types
+=============
+
+1.1 Waiting Step
+----------------
+1.1.1 Descriptiom
+-----------------
+1.1.1  If 5.2.1.2/Current step time  is EQUAL to the STEP TIME (INT) value
+(2 seconds in the example) , they are NO alarm issued.
+The sequence initiate the Transition execution.
+
+1.1.2 Syntaxe
+-------------
+
+!--------------------------------!----------------------!----------------!
+!            CONDITIONS          !       COMMANDS       !  STEP TIME     !
+!--------------------------------!----------------------!----------------!
+! Wait StepTime                  !                      !    2 S         !
+!--------------------------------!----------------------!----------------!
+
+1.2.  Conditions Step
+---------------------
+1.2.1 Description
+-----------------
+1.2.1.1.1 The sequence check every CONDITIONS LINE per LINE. 
+1.2.1.1.2 IF the logical result of all the CONDITIONS is TRUE
+he sequence initiate the Transition execution.
+
+
+1.2.2 Syntaxe
+!--------------------------------!----------------------!----------------!
+!            CONDITIONS          !       COMMANDS       !  STEP TIME     !
+!--------------------------------!----------------------!----------------!
+! F20AA01 Open                   !                      !                !
+! F20AA02 Open                   !                      !                !
+! F20AA03 Open                   !                      !    12 S        !
+! F20AA04 Open                   !                      !                !
+! F20AA06 Open                   !                      !                !
+!--------------------------------!----------------------!----------------!
+
+1.3. Conditions with Commands Step
+----------------------------------
+1.3.1 Description
+-----------------
+
+1.3.1.1.1 The sequence check every CONDITIONS LINE per LINE. 
+1.3.1.1.2 The sequence execute every COMMANDS LINE per LINE.
+1.3.1.1.3 IF the logical result of all the conditions is TRUE,
+the sequence initiate the Transition execution.
+
+1.3.2 Syntaxe
+!--------------------------------!----------------------!----------------!
+!            CONDITIONS          !       COMMANDS       !  STEP TIME     !
+!--------------------------------!----------------------!----------------!
+! F20AA01 Open                   ! F20AA01 Open  = RUN  !                !
+! F20AA02 Open                   ! F20AA02 Open  = TRUE !                !
+! F20AA03 Open                   ! F20AA02 Open  = FALSE!    12 S        !
+! F20AA04 Open                   !                      !                !
+! F20AA06 Open                   !                      !                !
+!--------------------------------!----------------------!----------------!
+
+1.4 Comparation Step
+-------------------
+1.4.1 Description
+-----------------
+1.4.1.1 The sequence check the comparation
+1.4.1.2 If the BOOL RESULT is TRUE,
+the sequence initiate the Transition execution.
+
+1.3.2 Syntaxe
+!--------------------------------!----------------------!----------------!
+!            CONDITIONS          !       COMMANDS       !  STEP TIME     !
+!--------------------------------!----------------------!----------------!
+! F20CL01_MM > 10                !                      !     15 S       !
+!--------------------------------!----------------------!----------------!
+
