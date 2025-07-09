@@ -12,7 +12,7 @@ This is the list of object type that ESIT have to communicate with.
 * THIS ARE NOT PHYSICAL OBJECTS, SIGNALS OR PUMP *
 ==================================================
 
-The interface between theses OBJECTS TYPE is done in AC 800 M PLC (and not in the 800xA system)
+The interface between theses OBJECTS TYPE is done in the potential PLC (and not in the Graphical User Interface system)
 
 It means the relationship is defined as:
 
